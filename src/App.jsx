@@ -2,16 +2,18 @@ import { useState, useEffect } from "react";
 import Blog from "./components/Blog";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [url, setUrl] = useState("");
+  const [notificationMessage, setNotificationMessage] = useState(null);
+  const [notificationType, setNotificationType] = useState(null);
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs));
@@ -39,6 +41,11 @@ const App = () => {
       setTitle("");
       setAuthor("");
       setUrl("");
+      setNotificationMessage(`a new blog ${returnedBlog.title} added`);
+      setNotificationType("success");
+      setTimeout(() => {
+        setNotificationMessage(null);
+      }, 5000);
     });
   };
 
@@ -56,32 +63,42 @@ const App = () => {
       setUsername("");
       setPassword("");
     } catch (exception) {
-      console.error("wrong credentials");
+      setNotificationMessage("wrong credentials");
+      setNotificationType("error");
+      setTimeout(() => {
+        setNotificationMessage(null);
+      }, 5000);
     }
   };
 
   const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>
-        username
-        <input
-          type="text"
-          value={username}
-          name="Username"
-          onChange={({ target }) => setUsername(target.value)}
-        />
-      </div>
-      <div>
-        password
-        <input
-          type="password"
-          value={password}
-          name="Password"
-          onChange={({ target }) => setPassword(target.value)}
-        />
-      </div>
-      <button type="submit">login</button>
-    </form>
+    <div>
+      <Notification
+        message={notificationMessage}
+        notificationType={notificationType}
+      />
+      <form onSubmit={handleLogin}>
+        <div>
+          username
+          <input
+            type="text"
+            value={username}
+            name="Username"
+            onChange={({ target }) => setUsername(target.value)}
+          />
+        </div>
+        <div>
+          password
+          <input
+            type="password"
+            value={password}
+            name="Password"
+            onChange={({ target }) => setPassword(target.value)}
+          />
+        </div>
+        <button type="submit">login</button>
+      </form>
+    </div>
   );
 
   if (user === null) {
@@ -96,6 +113,10 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
+      <Notification
+        message={notificationMessage}
+        notificationType={notificationType}
+      />
 
       <p>
         {user.name} logged-in
